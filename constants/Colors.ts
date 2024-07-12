@@ -1,26 +1,34 @@
-/**
- * Below are the colors that are used in the app. The colors are defined in the light and dark mode.
- * There are many other ways to style your app. For example, [Nativewind](https://www.nativewind.dev/), [Tamagui](https://tamagui.dev/), [unistyles](https://reactnativeunistyles.vercel.app), etc.
- */
-
-const tintColorLight = '#0a7ea4';
-const tintColorDark = '#fff';
 
 export const Colors = {
   light: {
-    text: '#11181C',
+    headerbg: '#d8dbdb',
+    primary: '#004D40',
+    secondary: '#00695C',
+    tertiary: '#00796B',
+    success: '#388E3C',
+    error: '#D32F2F',
+    warning: '#FFA000',
     background: '#fff',
-    tint: tintColorLight,
-    icon: '#687076',
-    tabIconDefault: '#687076',
-    tabIconSelected: tintColorLight,
+    text: '#000',
+    buttonbgcolor: '#004D40',
+    buttonTextColor: 'white',
+    modalBackground: '#b5f3ec',
+    bluetoothItmColor: '#04967d',
+
   },
   dark: {
+    headerbg: '#212121',
+    primary: '#212121',
+    secondary: '#424242',
+    tertiary: '#616161',
+    success: '#388E3C',
+    error: '#D32F2F',
+    warning: '#FFA000',
     text: '#ECEDEE',
-    background: '#151718',
-    tint: tintColorDark,
-    icon: '#9BA1A6',
-    tabIconDefault: '#9BA1A6',
-    tabIconSelected: tintColorDark,
+    background: '#333333',
+    buttonbgcolor: 'white',
+    buttonTextColor: 'black',
+    modalBackground: '#3b3a3a',
+    bluetoothItmColor: '#025c20',
   },
 };

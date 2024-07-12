@@ -1,7 +1,7 @@
 {
   "expo": {
-    "name": "thisapptest",
-    "slug": "thisapptest",
+    "name": "ChatMap",
+    "slug": "ChatMap",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
@@ -20,7 +20,7 @@
         "foregroundImage": "./assets/images/adaptive-icon.png",
         "backgroundColor": "#ffffff"
       },
-      "package": "com.anonymous.thisapptest"
+      "package": "com.anonymous.chatmap"
     },
     "web": {
       "bundler": "metro",
