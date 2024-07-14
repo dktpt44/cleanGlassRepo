@@ -1,4 +1,3 @@
-
 export const Colors = {
   light: {
     headerbg: '#d8dbdb',
@@ -13,8 +12,7 @@ export const Colors = {
     buttonbgcolor: '#004D40',
     buttonTextColor: 'white',
     modalBackground: '#b5f3ec',
-    bluetoothItmColor: '#04967d',
-
+    bluetoothItmColor: '#04967d'
   },
   dark: {
     headerbg: '#212121',
@@ -29,6 +27,6 @@ export const Colors = {
     buttonbgcolor: 'white',
     buttonTextColor: 'black',
     modalBackground: '#3b3a3a',
-    bluetoothItmColor: '#025c20',
-  },
+    bluetoothItmColor: '#025c20'
+  }
 };

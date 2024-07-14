@@ -1,32 +1,11 @@
 import React, { useState } from 'react';
-import {
-  Text,
-  View,
-  Pressable,
-  StyleSheet,
-  SafeAreaView,
-  ImageBackground,
-  StatusBar,
-  useColorScheme,
-  Alert,
-  Modal,
-  Linking,
-  ActivityIndicator,
-} from 'react-native';
+import { Text, View, Pressable, StyleSheet, SafeAreaView, ImageBackground, StatusBar, useColorScheme, Alert, Modal, Linking, ActivityIndicator } from 'react-native';
 import useBLE from '@/hooks/useBLE';
 import { Colors } from '@/constants/Colors';
 import { DeviceView } from '@/components/DeviceView';
 
 export default function Index() {
-  const {
-    blePoweredOn,
-    requestBluetoothPermission,
-    scanForPeripherals,
-    allDevices,
-    connectToDevice,
-    deviceConnected,
-    photos
-  } = useBLE();
+  const { blePoweredOn, requestBluetoothPermission, scanForPeripherals, allDevices, connectToDevice, deviceConnected, photos, setStartInfering } = useBLE();
 
   const colors = useColorScheme() === 'dark' ? Colors.dark : Colors.light;
   const [isModalVisible, setIsModalVisible] = useState<boolean>(false);
@@ -50,9 +29,9 @@ export default function Index() {
           {
             text: 'Cancel',
             onPress: () => console.log('Cancel Pressed'),
-            style: 'cancel',
+            style: 'cancel'
           },
-          { text: 'Open Settings', onPress: () => Linking.openSettings() },
+          { text: 'Open Settings', onPress: () => Linking.openSettings() }
         ],
         { cancelable: false }
       );
@@ -60,64 +39,19 @@ export default function Index() {
   };
 
   return (
-    <SafeAreaView
-      style={[styles.container, { backgroundColor: colors.background }]}
-    >
+    <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
       <ImageBackground
         source={require('../assets/bg_ai.png')}
         resizeMode="cover"
-        style={{ flex: 1 }}
-      >
+        style={{ flex: 1 }}>
         <StatusBar barStyle="light-content" />
         {(!(deviceConnected === 'connected') || !blePoweredOn) && (
-          <View
-            style={{
-              flex: 1,
-              justifyContent: 'center',
-              alignItems: 'center',
-              alignSelf: 'center',
-            }}
-          >
-            <View
-              style={{
-                flex: 5,
-                justifyContent: 'center',
-                alignItems: 'center',
-                alignSelf: 'center',
-              }}
-            >
-              <Text
-                style={{
-                  color: colors.text,
-                  fontSize: 26,
-                  textAlign: 'center',
-                  fontWeight: '800',
-                }}
-              >
-                Welcome!
-              </Text>
+          <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', alignSelf: 'center' }}>
+            <View style={{ flex: 5, justifyContent: 'center', alignItems: 'center', alignSelf: 'center' }}>
+              <Text style={{ color: colors.text, fontSize: 26, textAlign: 'center', fontWeight: '800' }}>Welcome!</Text>
             </View>
-            <View
-              style={{
-                flex: 6,
-                justifyContent: 'flex-start',
-                alignItems: 'center',
-                alignSelf: 'center',
-              }}
-            >
-              <Text
-                style={{
-                  color: colors.text,
-                  fontSize: 16,
-                  paddingLeft: 45,
-                  paddingRight: 45,
-                  marginBottom: 45,
-                  textAlign: 'center',
-                }}
-              >
-                Please make sure bluetooth is enabled on the device and
-                permissions are granted.
-              </Text>
+            <View style={{ flex: 6, justifyContent: 'flex-start', alignItems: 'center', alignSelf: 'center' }}>
+              <Text style={{ color: colors.text, fontSize: 16, paddingLeft: 45, paddingRight: 45, marginBottom: 45, textAlign: 'center' }}>Please make sure bluetooth is enabled on the device and permissions are granted.</Text>
 
               <Pressable
                 onPress={() => {
@@ -125,25 +59,11 @@ export default function Index() {
                   if (blePoweredOn) {
                     openModal();
                   } else {
-                    Alert.alert(
-                      'Bluetooth is not enabled',
-                      'Please enable bluetooth from device settings to continue.'
-                    );
+                    Alert.alert('Bluetooth is not enabled', 'Please enable bluetooth from device settings to continue.');
                   }
                 }}
-                style={[
-                  styles.connectButton,
-                  { backgroundColor: colors.buttonbgcolor },
-                ]}
-              >
-                <Text
-                  style={[
-                    styles.connectButtonText,
-                    { color: colors.buttonTextColor },
-                  ]}
-                >
-                  {'Scan for the device'}
-                </Text>
+                style={[styles.connectButton, { backgroundColor: colors.buttonbgcolor }]}>
+                <Text style={[styles.connectButtonText, { color: colors.buttonTextColor }]}>{'Scan for the device'}</Text>
               </Pressable>
 
               <Modal
@@ -151,47 +71,26 @@ export default function Index() {
                 transparent={true}
                 visible={isModalVisible}
                 onRequestClose={() => {
-                  Alert.alert(
-                    'Cancel connection',
-                    'Are you sure you want to close without connecting to any device?',
-                    [
-                      {
-                        text: 'Yes',
-                        onPress: () => {
-                          hideModal();
-                        },
-                      },
-                      {
-                        text: 'No',
-                        onPress: () => {},
-                      },
-                    ]
-                  );
-                }}
-              >
-                <View
-                  style={{
-                    height: '50%',
-                    marginTop: 'auto',
-                    borderTopRightRadius: 20,
-                    borderTopLeftRadius: 20,
-                    backgroundColor: colors.modalBackground,
-                  }}
-                >
-                  <Text
-                    style={{
-                      fontSize: 18,
-                      fontWeight: 'bold',
-                      textAlign: 'center',
-                      paddingTop: 20,
-                      marginBottom: 20,
-                      color: colors.text,
-                    }}
-                  >
-                    Select the device to connect
-                  </Text>
+                  Alert.alert('Cancel connection', 'Are you sure you want to close without connecting to any device?', [
+                    {
+                      text: 'Yes',
+                      onPress: () => {
+                        hideModal();
+                      }
+                    },
+                    {
+                      text: 'No',
+                      onPress: () => {}
+                    }
+                  ]);
+                }}>
+                <View style={{ height: '50%', marginTop: 'auto', borderTopRightRadius: 20, borderTopLeftRadius: 20, backgroundColor: colors.modalBackground }}>
+                  <Text style={{ fontSize: 18, fontWeight: 'bold', textAlign: 'center', paddingTop: 20, marginBottom: 20, color: colors.text }}>Select the device to connect</Text>
 
-                  <ActivityIndicator color={colors.success} size="small" />
+                  <ActivityIndicator
+                    color={colors.success}
+                    size="small"
+                  />
 
                   {/* // map allDevices  */}
                   {allDevices.length > 0 ? (
@@ -203,58 +102,32 @@ export default function Index() {
                             if (stat === 'connected') {
                               hideModal();
                             } else {
-                              Alert.alert(
-                                'Failed to connect',
-                                'Please try again.'
-                              );
+                              Alert.alert('Failed to connect', 'Please try again.');
                             }
                           });
                         }}
-                        style={{
-                          justifyContent: 'center',
-                          alignItems: 'center',
-                          height: 50,
-                          width: '60%',
-                          maxWidth: 300,
-                          paddingLeft: 25,
-                          paddingRight: 25,
-                          borderRadius: 10,
-                          backgroundColor: colors.bluetoothItmColor,
-                          margin: 10,
-                          marginLeft: 'auto',
-                          marginRight: 'auto',
-                        }}
-                      >
-                        <Text
-                          style={{
-                            fontSize: 16,
-                            fontWeight: 'bold',
-                            color: colors.text,
-                          }}
-                        >
-                          {(deviceConnected === 'connecting')? <ActivityIndicator color="white" size='small' /> : device.name}
+                        style={{ justifyContent: 'center', alignItems: 'center', height: 50, width: '60%', maxWidth: 300, paddingLeft: 25, paddingRight: 25, borderRadius: 10, backgroundColor: colors.bluetoothItmColor, margin: 10, marginLeft: 'auto', marginRight: 'auto' }}>
+                        <Text style={{ fontSize: 16, fontWeight: 'bold', color: colors.text }}>
+                          {deviceConnected === 'connecting' ? (
+                            <ActivityIndicator
+                              color="white"
+                              size="small"
+                            />
+                          ) : (
+                            device.name
+                          )}
                         </Text>
                       </Pressable>
                     ))
                   ) : (
-                    <Text
-                      style={{
-                        fontSize: 16,
-                        fontWeight: 'bold',
-                        textAlign: 'center',
-                        paddingTop: 30,
-                        color: colors.warning,
-                      }}
-                    >
-                      No compatible devices found
-                    </Text>
+                    <Text style={{ fontSize: 16, fontWeight: 'bold', textAlign: 'center', paddingTop: 30, color: colors.warning }}>No compatible devices found</Text>
                   )}
                 </View>
               </Modal>
             </View>
           </View>
         )}
-        {(deviceConnected === 'connected') && <DeviceView photos={photos}/>}
+        {deviceConnected === 'connected' && <DeviceView photos={photos} setStartInfering={setStartInfering} />}
       </ImageBackground>
     </SafeAreaView>
   );
@@ -264,7 +137,7 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     alignItems: 'stretch',
-    justifyContent: 'center',
+    justifyContent: 'center'
   },
   connectButton: {
     justifyContent: 'center',
@@ -272,12 +145,12 @@ const styles = StyleSheet.create({
     height: 50,
     paddingLeft: 25,
     paddingRight: 25,
-    borderRadius: 25,
+    borderRadius: 25
   },
   connectButtonText: {
     fontSize: 18,
-    fontWeight: 'bold',
-  },
+    fontWeight: 'bold'
+  }
 });
 
 {
