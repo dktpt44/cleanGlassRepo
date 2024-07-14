@@ -25,6 +25,7 @@ export default function Index() {
     allDevices,
     connectToDevice,
     deviceConnected,
+    photos
   } = useBLE();
 
   const colors = useColorScheme() === 'dark' ? Colors.dark : Colors.light;
@@ -253,7 +254,7 @@ export default function Index() {
             </View>
           </View>
         )}
-        {(deviceConnected === 'connected') && <DeviceView />}
+        {(deviceConnected === 'connected') && <DeviceView photos={photos}/>}
       </ImageBackground>
     </SafeAreaView>
   );
