@@ -1,14 +1,16 @@
 import * as React from 'react';
-import { ActivityIndicator, Image, ScrollView, Text, TextInput, View, Switch } from 'react-native';
+import { ActivityIndicator, Image, ScrollView, Text, TextInput, View, Switch, Pressable, useColorScheme } from 'react-native';
 import axios from 'axios';
 import * as Speech from 'expo-speech';
+import { Colors } from '@/constants/Colors';
 
 export const DeviceView = (props: { photos: string[]; setStartInfering: (status: boolean) => void }) => {
   const [voiceInputSwitch, setVoiceInputSwitch] = React.useState<boolean>(true);
   const [userPrompt, setUserPrompt] = React.useState<string>('To begin capturing pictures, please ask a question to the assistant.');
   const [waitForPictures, setWaitForPictures] = React.useState<boolean>(false);
   const [inferRequestProcessing, setInferRequestProcessing] = React.useState<boolean>(false);
-
+  const colors = useColorScheme() === 'dark' ? Colors.dark : Colors.light;
+  const [recordingAudio, setRecordingAudio] = React.useState<boolean>(false);
   const [assistantAnswer, setAssistantAnswer] = React.useState<string>('');
 
   const makeRequest = async (userTypedPrompt: string | null) => {
@@ -46,7 +48,6 @@ export const DeviceView = (props: { photos: string[]; setStartInfering: (status:
     setInferRequestProcessing(false);
     setWaitForPictures(false);
     props.setStartInfering(false);
-
   };
 
   const startInterfingForUser = (textVal: string) => {
@@ -95,11 +96,11 @@ export const DeviceView = (props: { photos: string[]; setStartInfering: (status:
 
       {/* input content  */}
 
-      <View style={{ width: '100%', padding: 20, position: 'absolute', bottom: 0 }}>
-        <View style={{ backgroundColor: 'rgb(28 28 28)', width: '100%', borderRadius: 5, flexDirection: 'column', paddingLeft: 8, paddingRight: 8 }}>
+      <View style={{ width: '100%', padding: 10, position: 'absolute', bottom: 18 }}>
+        <View style={{ backgroundColor: 'rgb(28 28 28)', width: '100%', borderRadius: 5, flexDirection: 'column', paddingLeft: 12, paddingRight: 12 }}>
           {/* for switch  */}
 
-          <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10, paddingLeft: 5 }}>
+          <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10, paddingLeft: 8, marginTop: 18 }}>
             <Text style={{ color: 'white', fontSize: 16 }}>Voice Input</Text>
             <Switch
               value={voiceInputSwitch}
@@ -121,6 +122,19 @@ export const DeviceView = (props: { photos: string[]; setStartInfering: (status:
             )}
           </View>
 
+          {/* for speech input  */}
+
+          {voiceInputSwitch && (
+            <Pressable
+              style={{ width: '50%', borderColor: recordingAudio ? colors.error : colors.success, borderWidth: 1, borderRadius: 5, marginLeft: 'auto', marginRight: 'auto', marginBottom: 24, padding: 8 }}
+              onPress={() => {
+                setRecordingAudio(!recordingAudio);
+              }}>
+              <Text style={{ color: 'white', fontSize: 16, textAlign: 'center' }}>{recordingAudio ? 'Stop Recording' : 'Start Recording'}</Text>
+            </Pressable>
+          )}
+
+          {/* for text input  */}
           {!voiceInputSwitch && (
             <TextInput
               style={{ color: 'white', fontSize: 16, borderRadius: 4, backgroundColor: 'rgb(48 48 48)', padding: 4, marginBottom: 14 }}
