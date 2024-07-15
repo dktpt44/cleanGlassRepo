@@ -1,7 +1,8 @@
 import * as React from 'react';
-import { ActivityIndicator, Image, ScrollView, Text, TextInput, View, Switch, Pressable, useColorScheme } from 'react-native';
+import { ActivityIndicator, Image, ScrollView, Text, TextInput, View, Switch, Pressable, useColorScheme, Platform, PermissionsAndroid, Alert } from 'react-native';
 import axios from 'axios';
 import * as Speech from 'expo-speech';
+import Voice from '@react-native-voice/voice';
 import { Colors } from '@/constants/Colors';
 
 export const DeviceView = (props: { photos: string[]; setStartInfering: (status: boolean) => void }) => {
@@ -12,6 +13,25 @@ export const DeviceView = (props: { photos: string[]; setStartInfering: (status:
   const colors = useColorScheme() === 'dark' ? Colors.dark : Colors.light;
   const [recordingAudio, setRecordingAudio] = React.useState<boolean>(false);
   const [assistantAnswer, setAssistantAnswer] = React.useState<string>('');
+
+  const checkMicrophonePermission = async () => {
+    if (Platform.OS === 'ios') {
+      return true;
+    }
+    if (Platform.OS === 'android') {
+      const hasPermission = await PermissionsAndroid.check(PermissionsAndroid.PERMISSIONS.RECORD_AUDIO);
+      if (hasPermission) {
+        return true;
+      } else {
+        const granted = await PermissionsAndroid.request(PermissionsAndroid.PERMISSIONS.RECORD_AUDIO);
+        if (granted === PermissionsAndroid.RESULTS.GRANTED) {
+          return true;
+        } else {
+          return false;
+        }
+      }
+    }
+  };
 
   const makeRequest = async (userTypedPrompt: string | null) => {
     // make first request about the first image
@@ -25,6 +45,7 @@ export const DeviceView = (props: { photos: string[]; setStartInfering: (status:
     }
 
     console.log('Making requestPrompt', requestPrompt);
+    console.log('Making requestPrompt', props.photos[0]);
 
     // make request to the assistant
     try {
@@ -64,6 +85,31 @@ export const DeviceView = (props: { photos: string[]; setStartInfering: (status:
     }
   };
 
+  const onSpeechStart = () => {
+    console.log('onSpeechStart');
+  };
+
+  const onSpeechEnd = () => {
+    console.log('onSpeechEnd');
+  };
+
+  const onSpeechResults = (e: any) => {
+    // console.log('onSpeechResults', e);
+    setUserPrompt(e.value[0]);
+    makeRequest(e.value[0]);
+  };
+
+  React.useEffect(() => {
+    Voice.onSpeechStart = onSpeechStart;
+    Voice.onSpeechEnd = onSpeechEnd;
+    Voice.onSpeechResults = onSpeechResults;
+    Voice.onSpeechError = (e) => console.log('onSpeechError', e);
+
+    return () => {
+      Voice.destroy().then(Voice.removeAllListeners);
+    };
+  }, []);
+
   React.useEffect(() => {
     // console.log('photos updated');
     if (props.photos.length === 2 && waitForPictures) {
@@ -87,7 +133,7 @@ export const DeviceView = (props: { photos: string[]; setStartInfering: (status:
           {props.photos.map((photo, index) => (
             <Image
               key={index}
-              style={{ width: 120, height: 120, borderRadius: 5, borderWidth: 1, borderColor: 'darkgreen' }}
+              style={{ width: 240, height: 240, borderRadius: 5, borderWidth: 1, borderColor: 'darkgreen' }}
               source={{ uri: photo }}
             />
           ))}
@@ -104,7 +150,12 @@ export const DeviceView = (props: { photos: string[]; setStartInfering: (status:
             <Text style={{ color: 'white', fontSize: 16 }}>Voice Input</Text>
             <Switch
               value={voiceInputSwitch}
-              onValueChange={() => setVoiceInputSwitch(!voiceInputSwitch)}
+              onValueChange={() => {
+                if (inferRequestProcessing) {
+                  return;
+                }
+                setVoiceInputSwitch(!voiceInputSwitch);
+              }}
             />
           </View>
 
@@ -126,10 +177,39 @@ export const DeviceView = (props: { photos: string[]; setStartInfering: (status:
 
           {voiceInputSwitch && (
             <Pressable
-              style={{ width: '50%', borderColor: recordingAudio ? colors.error : colors.success, borderWidth: 1, borderRadius: 5, marginLeft: 'auto', marginRight: 'auto', marginBottom: 24, padding: 8 }}
-              onPress={() => {
+              style={{ width: '50%', borderColor: recordingAudio ? colors.error : colors.success, borderWidth: 1, borderRadius: 5, marginLeft: 'auto', marginRight: 'auto', marginBottom: 24, padding: 8, flexDirection: 'column', justifyContent: 'center', alignItems: 'center', gap: 4 }}
+              onPress={async () => {
+                if (inferRequestProcessing) {
+                  return;
+                }
+                const hasPermission = await checkMicrophonePermission();
+                if (!hasPermission) {
+                  Alert.alert('Permission Denied', 'Please enable microphone permission to use this feature.');
+                  return;
+                }
+                if (recordingAudio) {
+                  try {
+                    Voice.removeAllListeners();
+                    await Voice.stop();
+                  } catch (error) {
+                    console.log('error', error);
+                  }
+                } else {
+                  setUserPrompt('Listening...');
+                  try {
+                    await Voice.start('en-US');
+                  } catch (error) {
+                    console.log('error', error);
+                  }
+                }
                 setRecordingAudio(!recordingAudio);
               }}>
+              <Image
+                source={{
+                  uri: 'https://cdn-icons-png.flaticon.com/512/4980/4980251.png'
+                }}
+                style={{ width: 40, height: 40 }}
+              />
               <Text style={{ color: 'white', fontSize: 16, textAlign: 'center' }}>{recordingAudio ? 'Stop Recording' : 'Start Recording'}</Text>
             </Pressable>
           )}
