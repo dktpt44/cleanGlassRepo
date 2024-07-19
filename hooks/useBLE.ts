@@ -80,9 +80,9 @@ export default function useBLE(): BluetoothLowEnergyApi {
     });
   };
 
-  const onDataUpdate = (error: BleError | null, characteristic: Characteristic | null) => {
+  // callback function to update data
+  const onDataReceivedFromBLE = (error: BleError | null, characteristic: Characteristic | null) => {
     if (error) {
-      setDeviceConnected('failed');
       console.log(error);
       return -1;
     } else if (!characteristic?.value) {
@@ -97,20 +97,10 @@ export default function useBLE(): BluetoothLowEnergyApi {
         console.log('Data error');
         return;
       }
-      console.log('Image received correctly');
+      // console.log('Image received correctly');
       const convImgDat = Buffer.from(imageData.buffer).toString('base64');
       packetNum = -1;
       const imageUri = `data:image/jpeg;base64,${convImgDat}`;
-      // if (startInfering) {
-      //   console.log('Start infering true. Setting photos');
-      //   let lastImage = photos.length > 0 ? photos[photos.length - 1] : null;
-      //   if (lastImage) {
-      //     setPhotos([lastImage, imageUri]);
-      //   } else {
-      //     setPhotos([imageUri]);
-      //   }
-      // } else {
-      // }
       setPhotos([imageUri]);
       imageData = Buffer.from('');
     } else {
@@ -142,10 +132,22 @@ export default function useBLE(): BluetoothLowEnergyApi {
         return;
       }
 
-      if (mtu.mtu) await mtu.discoverAllServicesAndCharacteristics();
+      if (mtu.mtu) {
+        await mtu.discoverAllServicesAndCharacteristics();
+      }
+
+      mtu.onDisconnected((error) => {
+        if (error) {
+          console.log('Disconnection error:', error);
+        } else {
+          console.log('Disconnected from device');
+        }
+        setDeviceConnected('connectionLost');
+      });
+
       bleManager.stopDeviceScan();
       if (mtu) {
-        mtu.monitorCharacteristicForService(SERVICE_UUID, PHOTO_CHARACTERISTIC, onDataUpdate);
+        mtu.monitorCharacteristicForService(SERVICE_UUID, PHOTO_CHARACTERISTIC, onDataReceivedFromBLE);
       } else {
         console.log('No Device Connected');
       }
@@ -154,7 +156,7 @@ export default function useBLE(): BluetoothLowEnergyApi {
     } catch (e) {
       console.log('FAILED TO CONNECT', e);
       setDeviceConnected('failed');
-      callbckfn('failed');
+      callbckfn('error');
     }
   };
 

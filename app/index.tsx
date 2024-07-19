@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Text, View, Pressable, StyleSheet, SafeAreaView, ImageBackground, StatusBar, useColorScheme, Alert, Modal, Linking, ActivityIndicator } from 'react-native';
 import useBLE from '@/hooks/useBLE';
 import { Colors } from '@/constants/Colors';
@@ -9,6 +9,12 @@ export default function Index() {
 
   const colors = useColorScheme() === 'dark' ? Colors.dark : Colors.light;
   const [isModalVisible, setIsModalVisible] = useState<boolean>(false);
+
+  useEffect(() => {
+    if (deviceConnected === 'connectionLost') {
+      Alert.alert('Connection Lost', 'Please reconnect to the device to continue.');
+    }
+  }, [deviceConnected]);
 
   const hideModal = () => {
     setIsModalVisible(false);
@@ -101,6 +107,8 @@ export default function Index() {
                           await connectToDevice(device, (stat: string) => {
                             if (stat === 'connected') {
                               hideModal();
+                            } else if (stat === 'failed') {
+                              Alert.alert('Failed', 'Failed to request 184 MTU. Try again.');
                             } else {
                               Alert.alert('Failed to connect', 'Please try again.');
                             }
@@ -127,7 +135,12 @@ export default function Index() {
             </View>
           </View>
         )}
-        {deviceConnected === 'connected' && <DeviceView photos={photos} setStartInfering={setStartInfering} />}
+        {deviceConnected === 'connected' && (
+          <DeviceView
+            photos={photos}
+            setStartInfering={setStartInfering}
+          />
+        )}
       </ImageBackground>
     </SafeAreaView>
   );

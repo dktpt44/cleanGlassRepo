@@ -39,26 +39,28 @@ export const DeviceView = (props: { photos: string[]; setStartInfering: (status:
     // make first request about the first image
     // make second request about the second image
     // make final request to the assistant
-    let requestPrompt = '';
-    if (userTypedPrompt) {
-      requestPrompt = userTypedPrompt;
-    } else {
-      requestPrompt = userPrompt || ' Describe what you see in these two image descriptions taken 2 seconds apart. Just summarize what you see in the images.';
-    }
 
-    console.log('Making requestPrompt => ', requestPrompt);
+    console.log('Making requestPrompt => ', userTypedPrompt);
     console.log('Image list:', props.photos.length);
 
     // make request to the assistant
-    if(props.photos.length === 0) {
+    if (props.photos.length === 0) {
       setAssistantAnswer('No images found to process.');
       setInferRequestProcessing(false);
       setWaitForPictures(false);
       props.setStartInfering(false);
       return;
     }
+    // if no prompt
+    if (!userTypedPrompt) {
+      setAssistantAnswer("No prompt given. Please provide a prompt to the assistant.");
+      setInferRequestProcessing(false);
+      setWaitForPictures(false);
+      props.setStartInfering(false);
+      return;
+    }
     try {
-      const response = await axios.post('http://cai-003.abudhabi.nyu.edu:54345/process_image', { image: props.photos[0], prompt: requestPrompt });
+      const response = await axios.post('http://cai-003.abudhabi.nyu.edu:54345/process_image', { image: props.photos[0], prompt: userTypedPrompt });
 
       if (response.status === 200) {
         // check if esists
@@ -101,25 +103,33 @@ export const DeviceView = (props: { photos: string[]; setStartInfering: (status:
   };
 
   const onSpeechEnd = () => {
-    // console.log('onSpeechEnd');
+    console.log('onSpeechEnd');
   };
 
   const onSpeechResults = (e: any) => {
-    // console.log('onSpeechResults', e);
+    console.log('Got: onSpeechResults:', e.value[0]);
+    console.log('photos length: ', props.photos.length);
+    if(e.value[0] === ""){
+      return;
+    }
     setUserPrompt(e.value[0]);
     makeRequest(e.value[0]);
   };
 
   React.useEffect(() => {
+    console.log("updating image.");
+    Voice.onSpeechResults = onSpeechResults;
+  }, [props.photos]);
+
+  React.useEffect(() => {
     Voice.onSpeechStart = onSpeechStart;
     Voice.onSpeechEnd = onSpeechEnd;
-    Voice.onSpeechResults = onSpeechResults;
     Voice.onSpeechError = (e) => console.log('something went wrong in speech to text::', e);
 
     return () => {
       Voice.destroy().then(Voice.removeAllListeners);
     };
-  }, [props.photos]);
+  }, []);
 
   React.useEffect(() => {
     // console.log('photos updated');
@@ -200,11 +210,10 @@ export const DeviceView = (props: { photos: string[]; setStartInfering: (status:
                 }
                 if (recordingAudio) {
                   try {
-                    console.log('stoping voice');
                     Voice.removeAllListeners();
                     await Voice.stop();
                   } catch (error) {
-                    console.log('error', error);
+                    console.log('Error in voice, error:', error);
                   }
                 } else {
                   setUserPrompt('Listening...');
