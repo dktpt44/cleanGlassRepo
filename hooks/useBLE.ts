@@ -1,4 +1,4 @@
-import { useMemo, useState, useCallback } from 'react';
+import { useMemo, useState, useCallback, useEffect } from 'react';
 import { Device, Characteristic, BleError, BleManager, DeviceId } from 'react-native-ble-plx';
 import { PermissionsAndroid, Platform } from 'react-native';
 import { Buffer } from 'buffer';
@@ -33,7 +33,10 @@ export default function useBLE(): BluetoothLowEnergyApi {
   const onStateChange = useCallback((state: string) => {
     setBleState(state === 'PoweredOn');
   }, []);
-  bleManager.onStateChange(onStateChange, true);
+  useEffect(() => {
+    console.log('Checking if bluetooth is enabled');
+    bleManager.onStateChange(onStateChange, true);
+  }, []);
 
   // method 2: request bluetooth permission
   const requestBluetoothPermission = async () => {
@@ -64,6 +67,7 @@ export default function useBLE(): BluetoothLowEnergyApi {
     bleManager.startDeviceScan(null, null, (error, device) => {
       if (error) {
         console.log(error);
+        console.log('Error in scanning');
       }
       if (device && device.name?.includes('ChatMap')) {
         setAllDevices((prevState: Device[]) => {
@@ -78,6 +82,7 @@ export default function useBLE(): BluetoothLowEnergyApi {
 
   const onDataUpdate = (error: BleError | null, characteristic: Characteristic | null) => {
     if (error) {
+      setDeviceConnected('failed');
       console.log(error);
       return -1;
     } else if (!characteristic?.value) {
@@ -88,29 +93,30 @@ export default function useBLE(): BluetoothLowEnergyApi {
     const frameBuffer = Buffer.from(characteristic.value, 'base64');
     if (frameBuffer.length === 2 && frameBuffer[0] === 0xff && frameBuffer[1] === 0xff) {
       // End of image flag
-      if(packetNum === -1) {
-        console.log("Data error");
+      if (packetNum === -1) {
+        console.log('Data error');
         return;
       }
+      console.log('Image received correctly');
       const convImgDat = Buffer.from(imageData.buffer).toString('base64');
       packetNum = -1;
       const imageUri = `data:image/jpeg;base64,${convImgDat}`;
-      if (startInfering) {
-        console.log('Start infering true. Setting photos');
-        let lastImage = photos.length > 0 ? photos[photos.length - 1] : null;
-        if (lastImage) {
-          setPhotos([lastImage, imageUri]);
-        } else {
-          setPhotos([imageUri]);
-        }
-      } else {
-        setPhotos([imageUri]);
-      }
+      // if (startInfering) {
+      //   console.log('Start infering true. Setting photos');
+      //   let lastImage = photos.length > 0 ? photos[photos.length - 1] : null;
+      //   if (lastImage) {
+      //     setPhotos([lastImage, imageUri]);
+      //   } else {
+      //     setPhotos([imageUri]);
+      //   }
+      // } else {
+      // }
+      setPhotos([imageUri]);
       imageData = Buffer.from('');
     } else {
       const packtNumber = frameBuffer[0] + (frameBuffer[1] << 8);
       // console.log(packtNumber);
-      if(packetNum+1 !== packtNumber){
+      if (packetNum + 1 !== packtNumber) {
         imageData = Buffer.from('');
         packetNum = -1;
         return;
@@ -129,7 +135,7 @@ export default function useBLE(): BluetoothLowEnergyApi {
       console.log('Connected to device mtu: ', deviceConnection.mtu);
       const mtu = await deviceConnection.requestMTU(512);
       console.log('MTU:', mtu.mtu);
-      if(mtu.mtu < 184){
+      if (mtu.mtu < 184) {
         console.log('MTU is less than 184');
         setDeviceConnected('failed');
         callbckfn('failed');
